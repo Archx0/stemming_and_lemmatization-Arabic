@@ -1,6 +1,6 @@
 original text
 
-<img src ="./img/1.png" width="800px">
+<img src ="./img/1.png" width="950px">
 
 
 Stop word
