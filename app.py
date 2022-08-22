@@ -9,7 +9,11 @@ from nltk.stem.isri import ISRIStemmer
 
 
 app = Flask(__name__)
+
+
 app.config['UPLOAD_FOLDER'] = 'uplaod'
+app.config['SECRET_KEY'] = '1234567890'
+
 
 @app.route('/')
 def index():
@@ -54,7 +58,10 @@ def PhraseAssignment(filename,status):
             output = open(f"PhraseAssignment/{filename}.txt",'a')
             output.write("\n"+word)
         output.close
-                        
+            
+            
+            
+                
 def stem(filename,status):
     if status == "getfile":
         stemmer = open(f"stemmer/{filename}.txt")
@@ -69,11 +76,16 @@ def stem(filename,status):
             for word in words:
                 word = stemmer.norm(word, num=1)  
                 if not word in stemmer.stop_words: 
-                    word = stemmer.pre32(word)      
-                    word = stemmer.suf32(word)       
-                    word = stemmer.waw(word)         
-                    word = stemmer.norm(word, num=2)  
-                    result.append(word)
+                    
+                    # ----------------------
+                    # from : motazsaad  github : https://github.com/motazsaad/arabic-light-stemming-py
+                    word = stemmer.pre32(word)       # remove length three and length two prefixes in this order
+                    word = stemmer.suf32(word)     # remove length three and length two suffixes in this order
+                    word = stemmer.waw(word)          # remove connective ‘و’ if it precedes a word beginning with ‘و’
+                    word = stemmer.norm(word, num=2)  # normalize initial hamza to bare alif
+                    # ----------------------
+
+                    result.append(word) 
                     outfile.write(' '.join(result)+"\n")
             outfile.close()
    
@@ -93,18 +105,17 @@ def cleanStopWords(filename,status):
                
             return file.read()
     if status == "clean":
-        block = ["'",'//','+',";",":","!","@","#","$","%","^","&","*","(",")","=","/","\\","]","`","|",".",",","<",">","،","؛","-",'"']
+        block = ["'",'//','+',";",":","!","@","#","$","%","^","&","*","(",")","=","/","\\","]","`","|",".",",","<",">","،","؛"]
         file = open(f'upload/{filename}.txt') 
         stop_words = open("stop_words_list.txt").read()
         
         line = file.read()
         words = line.split() 
         for r in words: 
-            if  r not in stop_words: 
-                if r not in block:
-                    appendFile = open(f'stopword/{filename}.txt','a') 
-                    appendFile.write("\n"+r.replace("،","").replace(":","").replace(".","").replace("(","").replace(")","").replace("؛","").replace("-","").replace('"',"")) 
-                    appendFile.close() 
+            if  r not in stop_words and  r not in block: 
+                appendFile = open(f'stopword/{filename}.txt','a') 
+                appendFile.write("\n"+r.replace("،","").replace(":","").replace(".","").replace("(","").replace(")","").replace("؛","")) 
+                appendFile.close() 
 
             
 if __name__ == "__main__":
